@@ -359,7 +359,6 @@
     "hint": "Think about multiple channels.",
     "explanation": "Spoofing applies to emails, calls, and sites."
   },
-  [
   {
     "type": "singleSelect",
     "question": "Spooping is the act of disguising a communication from an unknown source as being from a known, trusted source.",
@@ -536,7 +535,6 @@
     "hint": "Sniffers require a network.",
     "explanation": "Sniffers are not vulnerabilities of isolated computers."
   },
-  [
   {
     "type": "singleSelect",
     "question": "Which of the configurations is vulnerable to 'Sniffers'?",
