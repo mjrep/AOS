@@ -3,249 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Computer Security Review</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .quiz-container { background: white; width: 90%; max-width: 600px; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #333; margin-bottom: 1rem; }
-        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee; }
-        .progress { color: #666; font-size: 0.9rem; }
-        .question-box { font-size: 1.1rem; font-weight: 500; margin-bottom: 1.5rem; color: #222; min-height: 60px; }
-        .options-grid { display: grid; gap: 10px; }
-        button.option-btn { padding: 12px; border: 2px solid #e0e0e0; background: white; border-radius: 8px; cursor: pointer; text-align: left; font-size: 1rem; transition: all 0.2s; }
-        button.option-btn:hover { background-color: #f9f9f9; border-color: #bbb; }
-        button.option-btn.correct { background-color: #d4edda; border-color: #28a745; color: #155724; }
-        button.option-btn.wrong { background-color: #f8d7da; border-color: #dc3545; color: #721c24; }
-        .nav-btns { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
-        button.action-btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; background-color: #007bff; }
-        button.action-btn:disabled { background-color: #ccc; cursor: not-allowed; }
-        button.reset-btn { background-color: #6c757d; }
-        .hidden { display: none; }
-        .score-board { text-align: center; font-size: 1.5rem; margin-top: 2rem; }
-    </style>
+    <title>Module Review Quiz</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="quiz-container">
-    <h1>Security Terms Quiz</h1>
-    
-    <div class="controls">
-        <div class="progress">Question <span id="current-q">1</span> of <span id="total-q">0</span></div>
-        <label style="cursor: pointer;">
-            <input type="checkbox" id="randomize-toggle"> Randomize Order
-        </label>
+<div class="main-wrapper">
+
+    <div class="menu-buttons">
+    <button class="menu-btn" onclick="startModule(1)">Module 1 (Intro to OS)</button> 
+    <button class="menu-btn" onclick="startModule(4)">Module 4 (Virtual Memory)</button>
+    <button class="menu-btn" onclick="startModule(5)">Module 5 (Disk Scheduling)</button>
+    <button class="menu-btn" onclick="startModule(6)">Module 6 (Security)</button>
+</div>
     </div>
 
-    <div id="quiz-content">
-        <div class="question-box" id="question-text">Loading...</div>
-        <div class="options-grid" id="options-container"></div>
-    </div>
-
-    <div id="score-screen" class="hidden score-board">
-        <div>Quiz Complete!</div>
-        <div style="font-size: 3rem; margin: 10px 0;" id="final-score">0%</div>
-        <p id="score-text"></p>
-        <button class="action-btn" onclick="initQuiz()">Take Again</button>
-    </div>
-
-    <div class="nav-btns">
-        <button class="action-btn reset-btn" onclick="initQuiz()">Restart</button>
+    <div id="quiz-screen" class="card-container hidden">
+        
+        <div class="controls">
+            <button class="btn-small" onclick="showMenu()">← Menu</button>
+            <div class="progress">Question <span id="current-q">1</span> / <span id="total-q">0</span></div>
+            
+            <div class="settings-area">
+                <label class="random-box">
+                    <input type="checkbox" id="randomize-toggle"> Shuffle
+                </label>
+                <button class="btn-small" onclick="confirmRestart()">Reset</button>
+            </div>
         </div>
+
+        <h2 id="module-title" style="text-align: center; font-size: 1.1rem; color: #007bff; margin-top:0;">Module Name</h2>
+
+        <div id="quiz-content">
+            <div class="question-box" id="question-text">Loading...</div>
+            <div class="options-grid" id="options-container"></div>
+        </div>
+
+        <div id="score-screen" class="hidden score-board">
+            <h2>Module Complete!</h2>
+            <div class="big-score" id="final-score">0%</div>
+            <p id="score-text"></p>
+            <br>
+            <div class="nav-area" style="justify-content: center;">
+                <button class="nav-btn btn-prev" onclick="showMenu()">Back to Menu</button>
+                <button class="nav-btn btn-check" onclick="initQuiz()">Restart Module</button>
+            </div>
+        </div>
+
+        <div class="nav-area" id="nav-area">
+            <button class="nav-btn btn-prev" id="btn-prev" onclick="changeQuestion(-1)">Previous</button>
+            <button class="nav-btn btn-check" id="btn-check" onclick="checkAnswer()">Check Answer</button>
+            <button class="nav-btn btn-next" id="btn-next" onclick="changeQuestion(1)">Next</button>
+        </div>
+    </div>
+
 </div>
 
-<script>
-    // Data derived from your list. 
-    // Format: { q: "Definition/Question", a: "Correct Term", type: "tf" (true/false) or "mc" (multiple choice) }
-    const rawData = [
-        {a: "Denial of Service (DoS) attack", q: "One in which a malicious hacker takes over computers via the internet and causes them to flood a target site with demands for data and other small tasks causing a computer to perform repeated unproductive task."},
-        {a: "Operating System", q: "Plays a key role in computer system security."},
-        {a: "System Administrators", q: "Must be on guard to arm their operating systems with all available defense against attack."},
-        {a: "Strategies for improving system survivability based on knowledge retrieved from attacks", q: "“Adaptation and evolution to reduce effectiveness of future attacks” is described as..."},
-        {a: "True", q: "“E-mail” is a vulnerability of LAN connected (with internet).", type: "tf"},
-        {a: "LAN connected (with internet)", q: "“E-mail” is a vulnerability of which configuration?"},
-        {a: "Strategies for detecting attacks", q: "“Recognition of attacks and damage” is described as..."},
-        {a: "Strategies for limiting damage", q: "“Recovery of essential and full services after attack” is described as..."},
-        {a: "Strategies for repelling attacks", q: "“Resistance to attacks” is the same as..."},
-        {a: "False", q: "“Sniffers” is a vulnerability of a LAN connected (with internet). (Based on specific list logic)", type: "tf"},
-        {a: "True", q: "“Sniffers” is not a vulnerability of a LAN connected (with internet).", type: "tf"},
-        {a: "LAN connected (with internet)", q: "“Web Server” is a vulnerability of which configuration?"},
-        {a: "Logic Bomb", q: "A type of virus which is triggered by a certain event like keystroke."},
-        {a: "Time Bomb", q: "A type of virus which is triggered by a specific time."},
-        {a: "False", q: "Antivirus software can remove all impurities from your computer.", type: "tf"},
-        {a: "True", q: "Antivirus softwares combat viruses.", type: "tf"},
-        {a: "unintentional intrusions", q: "Any breach of security or modification of data that was not the result of a planned intrusion."},
-        {a: "True", q: "Blended threats are considered as intentional attacks.", type: "tf"},
-        {a: "True", q: "Boot sector virus infects the boot record, the system area of a floppy disk or a hard drive.", type: "tf"},
-        {a: "True", q: "Computer “Virus” is a vulnerability of Single Computer (without E-mail or internet).", type: "tf"},
-        {a: "True", q: "File infector virus infects files on your computer.", type: "tf"},
-        {a: "True", q: "Hoax site is an example of spoofing.", type: "tf"},
-        {a: "True", q: "Hoax Sites are used when unauthorized users want to disguise themselves as friendly sites.", type: "tf"},
-        {a: "Multipartite virus", q: "Infects both the boot record and program files, making them especially difficult to repair."},
-        {a: "Macro Virus", q: "Infects data files (such as word processing documents, spreadsheets, etc.)"},
-        {a: "Boot sector virus", q: "Infects the boot record, the system area of a floppy disk or a hard drive."},
-        {a: "Spoofing", q: "The act of disguising a communication from an unknown source as being from a known, trusted source."},
-        {a: "Browsing", q: "It is when an unauthorized users gain access to search through secondary storage directories or files for information they should not have the privilege to read."},
-        {a: "True", q: "LAN connected (without internet) is vulnerable to “sniffers”.", type: "tf"},
-        {a: "True", q: "Logic Bomb is a destructive program that can be triggered by a keystroke or connection with the Internet.", type: "tf"},
-        {a: "True", q: "Malicious or not, a breach of security severely damages the system’s credibility.", type: "tf"},
-        {a: "True", q: "Ransomware is a malware that demands a fee or ransom.", type: "tf"},
-        {a: "False", q: "Ransomware is similar to smishing except that the victims receive a voice mail telling them to call a phone number or access a website.", type: "tf"},
-        {a: "Trash Collection", q: "Refers to the use of discarded materials such as disks, CDs, printout, etc., to enter the system legally."},
-        {a: "True", q: "Repeated trials is also known as Brute Force Attack.", type: "tf"},
-        {a: "True", q: "Security breach can happen due to uneducated users and unauthorized access to system resources.", type: "tf"},
-        {a: "True", q: "Security breach is a gap in system security that can be malicious or not.", type: "tf"},
-        {a: "Virus", q: "Small programs written to alter the way a computer operates, without permission of the user."},
-        {a: "True", q: "Sniffers are programs that reside on computer attached to the network.", type: "tf"},
-        {a: "True", q: "Spear-phishing is variation of phishing In which the phishier sends fake emails to a certain employee of an organization.", type: "tf"},
-        {a: "True", q: "Spoofing can be applied to emails, phone calls, and websites.", type: "tf"},
-        {a: "True", q: "Spoofing is the act of disguising a communication from an unknown source as being from a known, trusted source.", type: "tf"},
-        {a: "False", q: "Spooping is the act of disguising a communication from an unknown source as being from a known, trusted source.", type: "tf"},
-        {a: "False", q: "The “Ease of protection” of a LAN connected (with Internet) is “High”.", type: "tf"},
-        {a: "False", q: "The “Ease of protection” of a LAN connected (with internet) is “Medium”.", type: "tf"},
-        {a: "Operating System", q: "The more complex and powerful the ________, the more likely it is to have vulnerabilities to attack."},
-        {a: "Repeated trials", q: "These refer to entering systems by guessing authentic passwords."},
-        {a: "Trap doors", q: "These refers to an unspecified and undocumented entry point to the system."},
-        {a: "Master boot record virus", q: "This infects the boot record of a disk, saving a legitimate copy of the master boot record in a different location on the volume."},
-        {a: "Self-replicating", q: "To be called a virus, one must be self-executing and __________."},
-        {a: "Wire tapping", q: "Unauthorized user monitors or modifies a user’s transmission."},
-        {a: "all of these", q: "“Virus” is a vulnerability of which configuration?"},
-        {a: "False", q: "Vishing is a type of phishing that involves the use of short messages service (SMS) texting.", type: "tf"},
-        {a: "True", q: "Vishing is similar to smishing except that the victims receive a voice mail telling them to call a phone number or access a website.", type: "tf"},
-        {a: "low", q: "What is the “ease of protection” of a LAN connected with internet?"},
-        {a: "Medium", q: "What is the “ease of protection” of a LAN connected without Internet?"},
-        {a: "High", q: "What is the “ease of protection” of a single computer without e-mail or internet?"},
-        {a: "low", q: "What is the “Relative risk” of a single computer without e-mail or internet?"},
-        {a: "all of these", q: "Which among the given is a vulnerability of a LAN connected with internet?"},
-        {a: "Sniffers", q: "Which among the given is a vulnerability of a LAN connected without internet?"},
-        {a: "Compressed Passwords", q: "Which among the given is a vulnerability of a single computer without e-mail or internet?"},
-        {a: "Single Computer (without E-mail or internet)", q: "Which among the given is NOT a vulnerability of a LAN connected with internet?"},
-        {a: "E-mail", q: "Which among the given is NOT a vulnerability of a LAN connected without internet?"},
-        {a: "Sniffers", q: "Which among the given is NOT a vulnerability of a single computer without e-mail or internet?"},
-        {a: "LAN connected with or without Internet", q: "Which of the configurations is vulnerable to “Sniffers”?"},
-        {a: "LAN connected with or without Internet", q: "Which of the configurations is vulnerable to “Spoofing”?"},
-        {a: "intrusion recognition patterns", q: "Which example strategy belongs to the key property “Adaptation and evolution to reduce effectiveness of future attacks”?"},
-        {a: "authentication", q: "Which example strategy does NOT belong to the key property “Recovery of essential and full services after attack”?"},
-        {a: "Hardware malfunction", q: "Which of the given is an example of unintentional attack?"},
-        {a: "intrusion detection", q: "Which of the given is an example strategy of the key property “Recognition of attack and damage”?"},
-        {a: "contingency planning", q: "Which of the given is an example strategy of the key property “Recover of essential and full services after attack”?"},
-        {a: "authentication", q: "Which of the given is an example strategy of the key property “Resistance to attacks”?"},
-        {a: "all of these", q: "Which of the given is considered as system vulnerabilities?"},
-        {a: "all of the above", q: "Which of these are the key properties of a survivable system?"},
-        {a: "False", q: "Worm is a program to use to enhance the speed of your computer.", type: "tf"},
-        {a: "True", q: "Worm is an example of Blended Threat.", type: "tf"},
-        {a: "Regular", q: "Written policies and procedures and _______ user training are essential elements of system management."}
-    ];
-
-    let currentQuestions = [];
-    let currentIdx = 0;
-    let score = 0;
-    let isRandom = false;
-
-    // Collect all unique non-True/False answers to act as distractors
-    const allAnswers = [...new Set(rawData.map(i => i.a).filter(a => a !== "True" && a !== "False"))];
-
-    const randomizeCheck = document.getElementById('randomize-toggle');
-    const questionText = document.getElementById('question-text');
-    const optionsContainer = document.getElementById('options-container');
-    const currentQEl = document.getElementById('current-q');
-    const totalQEl = document.getElementById('total-q');
-    const scoreScreen = document.getElementById('score-screen');
-    const quizContent = document.getElementById('quiz-content');
-    const finalScoreEl = document.getElementById('final-score');
-    const scoreTextEl = document.getElementById('score-text');
-
-    function initQuiz() {
-        isRandom = randomizeCheck.checked;
-        currentIdx = 0;
-        score = 0;
-        
-        // Clone Data
-        currentQuestions = [...rawData];
-
-        if (isRandom) {
-            shuffleArray(currentQuestions);
-        }
-
-        totalQEl.textContent = currentQuestions.length;
-        scoreScreen.classList.add('hidden');
-        quizContent.classList.remove('hidden');
-        
-        showQuestion();
-    }
-
-    function showQuestion() {
-        currentQEl.textContent = currentIdx + 1;
-        const qData = currentQuestions[currentIdx];
-        questionText.textContent = qData.q;
-        optionsContainer.innerHTML = '';
-
-        let options = [];
-
-        if (qData.type === "tf") {
-            options = ["True", "False"];
-        } else {
-            // Correct answer
-            options.push(qData.a);
-            // Get 3 random distractors
-            const distractors = allAnswers.filter(ans => ans !== qData.a);
-            shuffleArray(distractors);
-            options.push(...distractors.slice(0, 3));
-            shuffleArray(options);
-        }
-
-        options.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.textContent = opt;
-            btn.onclick = () => handleAnswer(btn, opt, qData.a);
-            optionsContainer.appendChild(btn);
-        });
-    }
-
-    function handleAnswer(btn, selected, correct) {
-        // Disable all buttons
-        const allBtns = optionsContainer.querySelectorAll('button');
-        allBtns.forEach(b => {
-            b.disabled = true;
-            if (b.textContent === correct) b.classList.add('correct');
-        });
-
-        if (selected === correct) {
-            score++;
-        } else {
-            btn.classList.add('wrong');
-        }
-
-        // Wait a moment then go next
-        setTimeout(() => {
-            currentIdx++;
-            if (currentIdx < currentQuestions.length) {
-                showQuestion();
-            } else {
-                endQuiz();
-            }
-        }, 1200);
-    }
-
-    function endQuiz() {
-        quizContent.classList.add('hidden');
-        scoreScreen.classList.remove('hidden');
-        const percentage = Math.round((score / currentQuestions.length) * 100);
-        finalScoreEl.textContent = percentage + "%";
-        scoreTextEl.textContent = `You got ${score} out of ${currentQuestions.length} correct.`;
-    }
-
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
-
-    // Start
-    initQuiz();
-
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
