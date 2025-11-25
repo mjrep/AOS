@@ -1,55 +1,53 @@
-let terms = [];
+let questions = [];
 let currentIndex = 0;
 let score = 0;
 
-async function loadTerms() {
-  const res = await fetch("terms.json");
-  terms = await res.json();
-  showQuestion();
+async function loadQuestions() {
+  try {
+    const res = await fetch("terms.json");
+    questions = await res.json();
+    showQuestion();
+  } catch (error) {
+    console.error("Failed to load questions:", error);
+    document.getElementById("question").innerText = "Error loading quiz data.";
+  }
 }
 
 function showQuestion() {
-  const term = terms[currentIndex].term;
-  const correctDef = terms[currentIndex].definition;
+  const q = questions[currentIndex];
+  document.getElementById("question").innerText = q.question;
 
-  // Pick 3 random wrong definitions
-  let options = [correctDef];
-  while (options.length < 4) {
-    let randomDef = terms[Math.floor(Math.random() * terms.length)].definition;
-    if (!options.includes(randomDef)) options.push(randomDef);
-  }
-
-  // Shuffle options
-  options.sort(() => Math.random() - 0.5);
-
-  document.getElementById("question").innerText = `What is "${term}"?`;
   const optionsDiv = document.getElementById("options");
   optionsDiv.innerHTML = "";
-  options.forEach((opt, i) => {
+
+  q.options.forEach((opt, i) => {
     const btn = document.createElement("button");
     btn.innerText = opt;
-    btn.onclick = () => checkAnswer(opt, correctDef);
+    btn.onclick = () => checkAnswer(i, q.answer[0], q.explanation);
     optionsDiv.appendChild(btn);
   });
 }
 
-function checkAnswer(selected, correct) {
+function checkAnswer(selected, correct, explanation) {
   if (selected === correct) {
     score++;
-    alert("✅ Correct!");
+    alert("✅ Correct!\n\n" + explanation);
   } else {
-    alert("❌ Wrong! Correct answer: " + correct);
+    alert("❌ Incorrect.\n\n" + explanation);
   }
-  document.getElementById("score").innerText = `Score: ${score}/${currentIndex+1}`;
+  document.getElementById("score").innerText = `Score: ${score}/${currentIndex + 1}`;
 }
 
 document.getElementById("next-btn").addEventListener("click", () => {
   currentIndex++;
-  if (currentIndex < terms.length) {
+  if (currentIndex < questions.length) {
     showQuestion();
   } else {
-    alert("Quiz finished! Final score: " + score + "/" + terms.length);
+    document.getElementById("question").innerText = "🎉 Quiz complete!";
+    document.getElementById("options").innerHTML = "";
+    document.getElementById("next-btn").style.display = "none";
+    document.getElementById("score").innerText = `Final Score: ${score}/${questions.length}`;
   }
 });
 
-loadTerms();
+loadQuestions();
